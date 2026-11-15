@@ -1,0 +1,256 @@
+@import '@fontsource-variable/geist/wght.css';
+@import '@fontsource-variable/geist-mono/wght.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+ * Design tokens. Defined once here, exposed to Tailwind in tailwind.config.ts.
+ * The accent is warm and reserved for the mile marker and call to action buttons. Nothing else.
+ */
+:root {
+  --c-bg: 11 13 16;
+  --c-surface: 17 20 25;
+  --c-raised: 24 28 35;
+  --c-line: 44 50 61;
+  --c-ink: 236 239 243;
+  --c-muted: 160 169 182;
+  --c-lit: 214 226 240;
+  --c-accent: 255 177 66;
+  --c-accent-ink: 20 14 4;
+  --c-danger: 255 138 128;
+
+  --font-sans: 'Geist Variable', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'Geist Mono Variable', ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  --page-max: 76rem;
+  --page-pad: 16px;
+  --header-h: 4rem;
+
+  color-scheme: dark;
+}
+
+@layer base {
+  html {
+    background: rgb(var(--c-bg));
+    color: rgb(var(--c-ink));
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    scroll-padding-top: calc(var(--header-h) + 1rem);
+  }
+  body {
+    background: rgb(var(--c-bg));
+    min-height: 100svh;
+  }
+  ::selection {
+    background: rgb(var(--c-lit) / 0.25);
+  }
+  :focus-visible {
+    outline: 2px solid rgb(var(--c-lit));
+    outline-offset: 3px;
+    border-radius: 4px;
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    html {
+      scroll-behavior: smooth;
+    }
+  }
+}
+
+@layer components {
+  .page-x {
+    @apply mx-auto w-full max-w-page;
+    padding-inline: var(--page-pad);
+  }
+  .eyebrow {
+    @apply font-mono text-xs uppercase tracking-[0.18em] text-muted;
+  }
+  .h-display {
+    @apply font-semibold tracking-[-0.035em] text-ink;
+    font-size: clamp(2.75rem, 7.2vw, 6.25rem);
+    line-height: 0.98;
+  }
+  .h-section {
+    @apply font-semibold tracking-[-0.03em] text-ink;
+    font-size: clamp(2rem, 4.4vw, 3.75rem);
+    line-height: 1.04;
+  }
+  .h-card {
+    @apply text-xl font-semibold tracking-[-0.015em] text-ink;
+  }
+  .lede {
+    @apply text-lg leading-relaxed text-muted sm:text-xl;
+  }
+  .prose-body p + p {
+    @apply mt-4;
+  }
+}
+
+.sr-only-focusable:not(:focus):not(:focus-within) {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/*
+ * Journey rail.
+ * --rail-x is where the road runs inside the page container. --rail-indent is where content starts.
+ * Without JavaScript (or before the SVG road is drawn) a CSS rail and lit nodes stand in for the road.
+ */
+:root {
+  --rail-x: 22px;
+  --rail-indent: 52px;
+}
+@media (min-width: 640px) {
+  :root {
+    --page-pad: 32px;
+    --rail-x: 34px;
+    --rail-indent: 80px;
+  }
+}
+@media (min-width: 1024px) {
+  :root {
+    --rail-x: 40px;
+    --rail-indent: 104px;
+  }
+}
+
+.rail-indent {
+  padding-left: var(--rail-indent);
+}
+.rail-layer {
+  position: absolute;
+  inset: 0;
+  margin-inline: auto;
+  width: calc(100% - 2 * var(--page-pad));
+  max-width: calc(var(--page-max) - 2 * var(--page-pad));
+  pointer-events: none;
+}
+.rail-anchor {
+  position: absolute;
+  left: var(--rail-x);
+  width: 2px;
+  height: 2px;
+  transform: translate(-50%, -50%);
+}
+
+/* Fallback rail: one lit line through the journey. Hidden once the SVG road takes over. */
+.journey::before {
+  content: '';
+  position: absolute;
+  top: 30svh;
+  bottom: 9rem;
+  left: max(calc(var(--page-pad) + var(--rail-x)), calc(50% - var(--page-max) / 2 + var(--page-pad) + var(--rail-x)));
+  width: 2px;
+  transform: translateX(-50%);
+  background: linear-gradient(rgb(var(--c-muted) / 0.25), rgb(var(--c-lit)) 30%);
+  pointer-events: none;
+}
+.journey.road-ready::before {
+  display: none;
+}
+.journey > :not(.road-svg) {
+  position: relative;
+  z-index: 1;
+}
+
+/* Nodes sit on the road. Lit by default (no JavaScript, reduced motion); unlit while the road is live. */
+.rail-node {
+  position: absolute;
+  left: var(--rail-x);
+  top: 0.95rem;
+  width: 13px;
+  height: 13px;
+  border-radius: 999px;
+  transform: translate(-50%, -50%);
+  border: 1.5px solid rgb(var(--c-lit));
+  background: rgb(var(--c-lit));
+  transition: background-color 0.35s, border-color 0.35s, transform 0.35s;
+}
+.road-ready .rail-node {
+  background: rgb(var(--c-bg));
+  border-color: rgb(var(--c-muted) / 0.7);
+}
+.road-ready .is-lit .rail-node,
+.road-ready .rail-node.is-lit {
+  background: rgb(var(--c-lit));
+  border-color: rgb(var(--c-lit));
+  transform: translate(-50%, -50%) scale(1.15);
+}
+
+/* Stop text: muted until the marker arrives, then full ink. Both states pass AA on the background. */
+.road-ready [data-road-lit] .lit-text {
+  color: rgb(var(--c-muted));
+  transition: color 0.4s;
+}
+.road-ready [data-road-lit].is-lit .lit-text {
+  color: rgb(var(--c-ink));
+}
+
+/* Road marks for the three steps */
+.rail-mark {
+  position: absolute;
+  left: var(--rail-x);
+  top: 0.8rem;
+  width: 22px;
+  height: 2px;
+  border-radius: 2px;
+  transform: translate(-50%, -50%);
+  background: rgb(var(--c-lit));
+  transition: opacity 0.35s, transform 0.35s;
+}
+.road-ready .rail-mark {
+  opacity: 0.25;
+  transform: translate(-50%, -50%) scaleX(0.5);
+}
+.road-ready .is-lit .rail-mark {
+  opacity: 1;
+  transform: translate(-50%, -50%) scaleX(1);
+}
+
+/* The no JavaScript stand in for the marker, at the end of the road */
+.rail-end-marker {
+  position: absolute;
+  left: var(--rail-x);
+  top: 50%;
+  width: 14px;
+  height: 20px;
+  border-radius: 4px;
+  background: rgb(var(--c-accent));
+  transform: translate(-50%, -50%);
+}
+.rail-end-marker::before {
+  content: '';
+  position: absolute;
+  inset: -30px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgb(var(--c-accent) / 0.4), transparent 65%);
+}
+.road-ready .rail-end-marker {
+  display: none;
+}
+
+/* Desktop: even service stops sit right of centre so the road weaves */
+@media (min-width: 1024px) {
+  .stops > li {
+    width: 50%;
+  }
+  .stops > li:nth-child(even) {
+    margin-left: 50%;
+  }
+  /* No JavaScript: a short dashed branch connects the rail to the shifted stops */
+  .journey:not(.road-ready) .stops > li:nth-child(even)::before {
+    content: '';
+    position: absolute;
+    top: 0.95rem;
+    left: calc(var(--rail-x) - 100%);
+    width: 100%;
+    border-top: 1.5px dashed rgb(var(--c-lit) / 0.5);
+  }
+}
