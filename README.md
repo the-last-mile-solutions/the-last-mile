@@ -2,7 +2,7 @@
 
 Marketing site for The Last Mile. Nuxt 3, static generation, Tailwind CSS, GSAP (ScrollTrigger and MotionPathPlugin) for the homepage road.
 
-## Run it -
+## Run it
 
 ```bash
 npm install
